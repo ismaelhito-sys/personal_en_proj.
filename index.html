@@ -1,664 +1,359 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lumina Linguist</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina Linguist - Safe Mode</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --glass: rgba(255, 255, 255, 0.15);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --primary: #a5b4fc; /* Indigo pastel */
-            --accent: #67e8f9; /* Cyan neon */
-            --success: #6ee7b7;
-            --error: #fda4af;
+            --primary: #6366f1;
+            --accent: #22d3ee;
             --text: #ffffff;
-            --dark-glass: rgba(0, 0, 0, 0.3);
+            --glass-bg: rgba(20, 20, 40, 0.7); /* Más oscuro para legibilidad */
+            --glass-border: rgba(255, 255, 255, 0.15);
         }
 
         body {
             font-family: 'Outfit', sans-serif;
             margin: 0;
-            background: linear-gradient(125deg, #1e1b4b, #312e81, #4c1d95);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
             color: var(--text);
             min-height: 100vh;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
-            overflow-x: hidden;
+            align-items: center;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* LIQUID GLASS UI ELEMENTS */
-        .glass-panel {
-            background: var(--glass);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            border-radius: 24px;
-        }
-
-        /* HEADER & MAP */
+        /* HEADER */
         .app-header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            padding: 15px 20px;
+            width: 90%;
+            max-width: 500px;
+            padding: 20px 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--glass-border);
-        }
-
-        .stat-capsule {
-            background: var(--dark-glass);
-            padding: 8px 16px;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .level-map {
-            padding: 40px 0 100px 0;
-            display: flex;
-            flex-direction: column-reverse; /* Bottom to top */
-            align-items: center;
-            width: 100%;
-            position: relative;
-        }
-
-        /* SVG Line connecting nodes would go here dynamically, keeping it simple for CSS */
-
-        .level-node {
-            width: 80px;
-            height: 80px;
-            border-radius: 40%; /* Squircle ish */
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-            border: 2px solid var(--glass-border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 900;
-            color: rgba(255,255,255,0.5);
-            margin: 15px 0;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-        }
-
-        .level-node.unlocked {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            color: white;
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
-            border: none;
-        }
-
-        .level-node.current {
-            transform: scale(1.2);
-            border: 3px solid var(--accent);
-            box-shadow: 0 0 30px rgba(103, 232, 249, 0.6);
             z-index: 10;
         }
 
-        .level-node.boss {
-            border-radius: 50%;
-            width: 100px; height: 100px;
-            background: linear-gradient(135deg, #f43f5e, #be123c);
-        }
-
-        /* JUMP BUTTON */
-        .jump-fab {
-            position: fixed;
-            bottom: 30px;
-            right: 20px;
-            background: var(--text);
-            color: #1e1b4b;
-            padding: 15px 25px;
-            border-radius: 20px;
-            font-weight: 900;
-            border: none;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            z-index: 90;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .jump-fab:active { transform: scale(0.95); }
-
-        /* LESSON OVERLAY */
-        .lesson-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(20px);
-            z-index: 200;
-            display: none;
-            flex-direction: column;
-            animation: fadeIn 0.3s forwards;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .lesson-header {
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .progress-track {
-            flex-grow: 1;
-            height: 8px;
+        .stat-badge {
             background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            background: var(--success);
-            width: 0%;
-            transition: width 0.5s ease;
-            box-shadow: 0 0 10px var(--success);
-        }
-
-        .card-container {
-            flex-grow: 1;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 700;
+            border: 1px solid var(--glass-border);
             display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            gap: 10px;
         }
 
-        .question-card {
+        /* MAPA */
+        .map-container {
             width: 100%;
             max-width: 500px;
-            padding: 40px 30px;
-            text-align: center;
-            transform: translateY(20px);
-            opacity: 0;
-            animation: slideUp 0.5s forwards 0.2s;
-        }
-
-        @keyframes slideUp { to { transform: translateY(0); opacity: 1; } }
-
-        .q-tag {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--accent);
-            margin-bottom: 15px;
-            display: block;
-            font-weight: 700;
-        }
-
-        .q-text {
-            font-size: 1.8rem;
-            font-weight: 300;
-            line-height: 1.4;
-            margin-bottom: 40px;
-        }
-
-        .strong { font-weight: 700; color: var(--primary); }
-
-        /* OPTIONS & MIC */
-        .options-grid { display: grid; gap: 15px; }
-        
-        .option-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 16px;
-            color: white;
-            font-size: 1.1rem;
-            text-align: left;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'Outfit', sans-serif;
-        }
-
-        .option-btn:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); }
-        
-        .option-btn.correct {
-            background: rgba(16, 185, 129, 0.2);
-            border-color: var(--success);
-            color: var(--success);
-        }
-        
-        .option-btn.wrong {
-            background: rgba(244, 63, 94, 0.2);
-            border-color: var(--error);
-            color: var(--error);
-        }
-
-        .mic-wrapper {
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            padding-bottom: 100px;
             position: relative;
-            width: 120px; height: 120px;
-            margin: 0 auto;
+        }
+
+        /* Línea conectora visual */
+        .map-line {
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 4px;
+            background: rgba(255,255,255,0.05);
+            z-index: 0;
+        }
+
+        .level-node {
+            width: 70px;
+            height: 70px;
+            background: #1e293b;
+            border: 2px solid var(--glass-border);
+            border-radius: 50%; /* Círculos perfectos */
             display: flex;
             justify-content: center;
             align-items: center;
-        }
-
-        .mic-btn {
-            width: 80px; height: 80px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #f43f5e, #e11d48);
-            border: none;
-            color: white;
-            font-size: 2rem;
-            cursor: pointer;
-            z-index: 2;
-            box-shadow: 0 10px 20px rgba(225, 29, 72, 0.4);
-            transition: transform 0.2s;
-        }
-
-        .mic-btn:active { transform: scale(0.9); }
-
-        .mic-ripple {
-            position: absolute;
-            width: 100%; height: 100%;
-            border-radius: 50%;
-            border: 2px solid var(--error);
-            opacity: 0;
-            z-index: 1;
-        }
-
-        .mic-listening .mic-ripple { animation: ripple 1.5s infinite; }
-
-        @keyframes ripple {
-            0% { transform: scale(0.8); opacity: 1; }
-            100% { transform: scale(1.5); opacity: 0; }
-        }
-
-        /* FEEDBACK MODAL (BOTTOM SHEET) */
-        .feedback-sheet {
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            padding: 30px;
-            border-radius: 30px 30px 0 0;
-            background: #1e293b;
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .sheet-visible { transform: translateY(0); }
-        .sheet-correct { background: #064e3b; }
-        .sheet-wrong { background: #450a0a; }
-
-        .next-btn {
-            width: 100%;
-            padding: 18px;
-            border-radius: 16px;
-            border: none;
-            background: white;
-            color: #0f172a;
             font-weight: 900;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            margin: 15px 0;
             cursor: pointer;
-            margin-top: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            z-index: 1;
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
+
+        .level-node.unlocked {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .level-node.current {
+            background: var(--accent);
+            color: #000;
+            transform: scale(1.3);
+            border: 4px solid rgba(255,255,255,0.5);
+            box-shadow: 0 0 25px rgba(34, 211, 238, 0.6);
+        }
+
+        .level-node.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* BOTÓN FLOTANTE */
+        .fab-jump {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-weight: 900;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        /* LESSON OVERLAY (PANTALLA COMPLETA) */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.98);
+            z-index: 200;
+            display: none; /* Se activa con JS */
+            flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn { from {opacity:0} to {opacity:1}}
+
+        .lesson-nav {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-bar {
+            flex-grow: 1;
+            height: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-fill { height: 100%; width: 0%; background: var(--success, #22c55e); transition: 0.3s; }
+
+        .card {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .q-text { font-size: 1.8rem; font-weight: 700; margin-bottom: 40px; line-height: 1.4; }
+        .highlight { color: var(--accent); border-bottom: 2px dashed var(--accent); }
+
+        .btn-opt {
+            width: 100%;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1.1rem;
+            border-radius: 15px;
+            cursor: pointer;
+            text-align: left;
+            font-family: inherit;
+        }
+
+        .btn-opt:hover { background: rgba(255,255,255,0.15); }
+        .correct { background: rgba(34, 197, 94, 0.2) !important; border-color: #22c55e !important; }
+        .wrong { background: rgba(239, 68, 68, 0.2) !important; border-color: #ef4444 !important; }
 
     </style>
 </head>
 <body>
 
     <header class="app-header">
-        <div class="stat-capsule" style="color:var(--success)">
-            <span>💚</span> <span id="hearts-display">5</span>
-        </div>
-        <div class="stat-capsule" style="color:var(--accent)">
-            <span>💠</span> <span id="level-display">1</span>
-        </div>
+        <div class="stat-badge">❤️ <span id="hearts">5</span></div>
+        <div class="stat-badge">⭐ LVL <span id="lvl-display">1</span></div>
     </header>
 
-    <div class="level-map" id="game-map">
+    <div class="map-container" id="map-root">
+        <div class="map-line"></div>
+        <p style="margin-top: 50px;">Cargando niveles...</p>
+    </div>
+
+    <button class="fab-jump" onclick="tryJump()">⚡ TEST SALTO</button>
+
+    <div class="overlay" id="lesson-ui">
+        <div class="lesson-nav">
+            <button onclick="closeLesson()" style="background:none; border:none; color:white; font-size:1.5rem;">✕</button>
+            <div class="progress-bar"><div class="progress-fill" id="p-bar"></div></div>
         </div>
-
-    <button class="jump-fab" onclick="initJump()">⚡ JUMP TEST</button>
-
-    <div class="lesson-overlay" id="lesson-layer">
-        <div class="lesson-header">
-            <div onclick="exitLesson()" style="cursor:pointer; font-size:1.5rem; opacity:0.7">✕</div>
-            <div class="progress-track">
-                <div class="progress-fill" id="lesson-progress"></div>
-            </div>
-        </div>
-
-        <div class="card-container" id="card-anchor">
-            </div>
-
-        <div class="feedback-sheet" id="feedback-sheet">
-            <h2 id="feedback-title" style="margin:0 0 10px 0;">Great Job!</h2>
-            <p id="feedback-msg" style="margin:0; opacity:0.8;">Correct solution here.</p>
-            <button class="next-btn" id="next-btn" onclick="nextSlide()">CONTINUE</button>
-        </div>
+        <div class="card" id="card-content"></div>
     </div>
 
 <script>
-    /**
-     * SEMANTIC FRAME ENGINE v1.0
-     * Generates logical sentences based on linguistic templates instead of random words.
-     */
-    const Engine = {
-        data: {
-            people: ["My brother", "The CEO", "A scientist", "The developer", "Sarah", "Our teacher"],
-            time_present: ["usually", "often", "rarely", "always", "sometimes"],
-            time_past: ["yesterday", "last week", "two days ago", "in 2010"],
-            
-            // Verbs are objects with conjugations to ensure grammar accuracy
-            verbs_action: [
-                { base: "write", 3ps: "writes", past: "wrote", pp: "written", gerund: "writing", trans: "escribir" },
-                { base: "eat", 3ps: "eats", past: "ate", pp: "eaten", gerund: "eating", trans: "comer" },
-                { base: "fix", 3ps: "fixes", past: "fixed", pp: "fixed", gerund: "fixing", trans: "arreglar" },
-                { base: "buy", 3ps: "buys", past: "bought", pp: "bought", gerund: "buying", trans: "comprar" }
-            ],
-
-            objects: ["a report", "the car", "a new house", "dinner", "the code"],
-            
-            phrasals: [
-                { v: "give up", meaning: "quit", context: "smoking" },
-                { v: "look forward to", meaning: "anticipate", context: "the meeting" },
-                { v: "run out of", meaning: "exhaust", context: "time" }
-            ]
+    // --- SAFE STORAGE WRAPPER ---
+    // Evita que la app se rompa si las cookies están bloqueadas
+    const Storage = {
+        get: (key) => {
+            try { return localStorage.getItem(key); } catch(e) { return null; }
         },
-
-        // Generates a question based on user Level difficulty
-        generate: function(level) {
-            const seed = Math.random();
-            const subject = this.data.people[Math.floor(Math.random() * this.data.people.length)];
-            const verb = this.data.verbs_action[Math.floor(Math.random() * this.data.verbs_action.length)];
-            const obj = this.data.objects[Math.floor(Math.random() * this.data.objects.length)];
-
-            // LEVEL 1-10: Present Simple vs Continuous
-            if (level <= 10) {
-                if (seed > 0.5) { // Type: Grammar (Gap Fill)
-                    return {
-                        type: "grammar",
-                        tag: "PRESENT TENSE",
-                        q: `${subject} ____ ${obj} right now.`,
-                        correct: `is ${verb.gerund}`,
-                        options: [`is ${verb.gerund}`, verb.3ps, verb.base, `are ${verb.gerund}`],
-                        feedback: "Use 'is + ing' for actions happening right now."
-                    };
-                } else { // Type: Speaking
-                    const sentence = `${subject} ${verb.3ps} ${obj}`;
-                    return {
-                        type: "speaking",
-                        tag: "PRONUNCIATION",
-                        q: sentence,
-                        correct: sentence.toLowerCase(),
-                        feedback: "Great pronunciation!"
-                    };
-                }
-            }
-            
-            // LEVEL 11-40: Past & Conditionals
-            else if (level <= 40) {
-                const time = this.data.time_past[Math.floor(Math.random() * this.data.time_past.length)];
-                if (seed > 0.6) {
-                    return {
-                        type: "grammar",
-                        tag: "PAST SIMPLE",
-                        q: `${subject} ____ ${obj} ${time}.`,
-                        correct: verb.past,
-                        options: [verb.past, verb.base, `has ${verb.pp}`, verb.3ps],
-                        feedback: `Use Past Simple (${verb.past}) with finished time markers like '${time}'.`
-                    };
-                } else {
-                    return {
-                        type: "grammar",
-                        tag: "SECOND CONDITIONAL",
-                        q: `If I were you, I ____ ${obj}.`,
-                        correct: `would ${verb.base}`,
-                        options: [`would ${verb.base}`, `will ${verb.base}`, verb.past, `would have ${verb.pp}`],
-                        feedback: "Hypothetical situations (If I were you) use 'would + base verb'."
-                    };
-                }
-            }
-
-            // LEVEL 41+: Advanced / Phrasals / Perfects
-            else {
-                const pv = this.data.phrasals[Math.floor(Math.random() * this.data.phrasals.length)];
-                return {
-                    type: "grammar",
-                    tag: "PHRASAL VERBS",
-                    q: `We need to stop. We have ____ ${pv.context}.`,
-                    correct: "run out of", // Simplified logic for demo
-                    options: ["run out of", "run away with", "run into", "run over"],
-                    feedback: "'Run out of' means to have none left."
-                };
-            }
+        set: (key, val) => {
+            try { localStorage.setItem(key, val); } catch(e) { console.warn("Storage blocked"); }
         }
     };
 
-    /**
-     * APP LOGIC
-     */
-    let state = {
-        level: parseInt(localStorage.getItem('ll_level')) || 1,
-        hearts: 5,
-        session: [], // Current exercises
-        step: 0,
-        isJump: false
+    // --- DATA ENGINE ---
+    const user = {
+        lvl: parseInt(Storage.get('my_lvl')) || 1,
+        hearts: 5
     };
 
-    // Initialize
-    document.getElementById('level-display').innerText = state.level;
-    renderMap();
+    const grammarData = [
+        { lvl: 1, q: "She ____ to the store.", a: ["goes", "go", "going"], c: 0 },
+        { lvl: 1, q: "I am ____ a book.", a: ["reading", "read", "reads"], c: 0 },
+        { lvl: 5, q: "They ____ here yesterday.", a: ["were", "was", "are"], c: 0 },
+        { lvl: 10, q: "I have ____ that movie.", a: ["seen", "see", "saw"], c: 0 },
+        { lvl: 20, q: "If I ____ you, I would accept.", a: ["were", "was", "am"], c: 0 },
+        { lvl: 30, q: "He is accused ____ stealing.", a: ["of", "for", "with"], c: 0 },
+        { lvl: 50, q: "Hardly had I arrived ____ it rained.", a: ["when", "than", "after"], c: 0 }
+    ];
 
-    // -- MAP RENDERING --
+    let session = { active: false, step: 0, total: 5, questions: [] };
+
+    // --- INICIALIZACIÓN ---
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('lvl-display').innerText = user.lvl;
+        renderMap();
+    });
+
     function renderMap() {
-        const container = document.getElementById('game-map');
-        container.innerHTML = '';
-        
-        // Generate visible nodes (previous 5, current, next 20)
-        const start = Math.max(1, state.level - 5);
-        const end = state.level + 20;
+        const root = document.getElementById('map-root');
+        // Limpiamos el texto de "Cargando..."
+        root.innerHTML = '<div class="map-line"></div>';
 
-        for (let i = start; i <= end; i++) {
-            const node = document.createElement('div');
-            let classes = 'level-node glass-panel';
-            if (i < state.level) classes += ' unlocked';
-            if (i === state.level) classes += ' current unlocked';
-            if (i % 10 === 0) classes += ' boss';
+        // Renderizamos 20 niveles por delante
+        const maxShow = user.lvl + 15;
+        const minShow = Math.max(1, user.lvl - 5);
+
+        for (let i = minShow; i <= maxShow; i++) {
+            const btn = document.createElement('div');
+            let status = 'locked';
+            if (i < user.lvl) status = 'unlocked';
+            if (i === user.lvl) status = 'current';
+
+            btn.className = `level-node ${status}`;
+            btn.innerText = i;
             
-            node.className = classes;
-            node.innerText = i;
-            
-            // Zig zag layout
-            const offset = Math.sin(i) * 50; 
-            node.style.transform = `translateX(${offset}px)`;
-            if (i === state.level) node.style.transform = `translateX(${offset}px) scale(1.2)`;
+            // Zigzag
+            btn.style.marginLeft = (Math.sin(i) * 50) + 'px';
 
-            node.onclick = () => {
-                if (i <= state.level) startSession(i, false);
-            };
+            // Click event
+            if (i <= user.lvl) {
+                btn.onclick = () => startLevel(i);
+            }
 
-            container.appendChild(node);
+            root.appendChild(btn);
         }
     }
 
-    // -- SESSION MANAGEMENT --
-    function startSession(lvl, isJump) {
-        state.isJump = isJump;
-        state.step = 0;
-        state.session = [];
-        
-        // Create 5 unique exercises using the Engine
-        const count = isJump ? 10 : 5;
-        for(let i=0; i<count; i++) {
-            state.session.push(Engine.generate(isJump ? state.level + 10 : lvl));
+    // --- LÓGICA DE JUEGO ---
+    function startLevel(targetLvl, isJump = false) {
+        session.active = true;
+        session.step = 0;
+        session.total = isJump ? 10 : 5;
+        session.questions = [];
+
+        // Generador de preguntas (Fallback seguro)
+        for(let k=0; k<session.total; k++) {
+            // Buscamos pregunta cercana al nivel o una genérica
+            let q = grammarData.find(d => d.lvl >= targetLvl) || grammarData[0];
+            // Clonamos para no modificar original y mezclamos respuestas
+            let answers = q.a.map((txt, idx) => ({ txt, isC: idx === q.c }));
+            answers.sort(() => Math.random() - 0.5);
+            
+            session.questions.push({
+                text: q.q,
+                answers: answers
+            });
         }
 
-        document.getElementById('lesson-layer').style.display = 'flex';
+        document.getElementById('lesson-ui').style.display = 'flex';
         renderCard();
     }
 
     function renderCard() {
-        const item = state.session[state.step];
-        const container = document.getElementById('card-anchor');
-        const progress = (state.step / state.session.length) * 100;
+        const q = session.questions[session.step];
+        const ui = document.getElementById('card-content');
+        const p = (session.step / session.total) * 100;
+        document.getElementById('p-bar').style.width = p + '%';
+
+        let html = `<div class="q-text">${q.text.replace('____', '<span class="highlight">____</span>')}</div>`;
         
-        document.getElementById('lesson-progress').style.width = `${progress}%`;
-        document.getElementById('feedback-sheet').classList.remove('sheet-visible', 'sheet-correct', 'sheet-wrong');
-        
-        // Shuffle options if grammar
-        if(item.options) item.options.sort(() => Math.random() - 0.5);
+        q.answers.forEach(ans => {
+            html += `<button class="btn-opt" onclick="check(this, ${ans.isC})">${ans.txt}</button>`;
+        });
 
-        let html = `
-            <div class="question-card glass-panel">
-                <span class="q-tag">${item.tag} ${state.isJump ? '• TEST' : ''}</span>
-                <div class="q-text">${formatQuestion(item.q)}</div>
-        `;
-
-        if (item.type === 'grammar') {
-            html += `<div class="options-grid">`;
-            item.options.forEach(opt => {
-                html += `<button class="option-btn" onclick="checkAnswer('${opt}', '${item.correct}')">${opt}</button>`;
-            });
-            html += `</div>`;
-        } else if (item.type === 'speaking') {
-            html += `
-                <div class="mic-wrapper" id="mic-container">
-                    <div class="mic-ripple"></div>
-                    <button class="mic-btn" onclick="toggleMic('${item.correct}')">🎤</button>
-                </div>
-                <p style="margin-top:20px; opacity:0.7">Tap and read aloud</p>
-                <div id="speech-result" style="height:20px; color:var(--accent); font-weight:bold"></div>
-            `;
-        }
-
-        html += `</div>`;
-        container.innerHTML = html;
+        ui.innerHTML = html;
     }
 
-    // Helper to highlight blanks
-    function formatQuestion(text) {
-        return text.replace('____', '<span style="border-bottom: 2px solid var(--accent); color:var(--accent); padding:0 10px">?</span>');
-    }
+    function check(btn, isCorrect) {
+        // Bloquear botones
+        const all = document.querySelectorAll('.btn-opt');
+        all.forEach(b => b.disabled = true);
 
-    // -- VALIDATION LOGIC --
-    function checkAnswer(userAns, correctAns) {
-        const isCorrect = userAns === correctAns;
-        showFeedback(isCorrect, correctAns);
-    }
-
-    function showFeedback(isCorrect, correctAns) {
-        const sheet = document.getElementById('feedback-sheet');
-        const title = document.getElementById('feedback-title');
-        const msg = document.getElementById('feedback-msg');
-        const item = state.session[state.step];
-
-        sheet.classList.add('sheet-visible');
         if (isCorrect) {
-            sheet.classList.add('sheet-correct');
-            title.innerText = "Excellent!";
-            msg.innerText = item.feedback || "That is correct.";
-            new Audio('https://actions.google.com/sounds/v1/cartoon/pop.ogg').play().catch(()=>{}); // Simple sound
+            btn.classList.add('correct');
+            setTimeout(nextStep, 800);
         } else {
-            sheet.classList.add('sheet-wrong');
-            title.innerText = "Not quite...";
-            msg.innerText = `Correct answer: ${correctAns}`;
-            state.hearts--;
-            document.getElementById('hearts-display').innerText = state.hearts;
-            if(state.hearts <= 0) gameOver();
+            btn.classList.add('wrong');
+            user.hearts--;
+            document.getElementById('hearts').innerText = user.hearts;
+            if(user.hearts <= 0) {
+                alert("💔 Fin del juego. Inténtalo de nuevo.");
+                location.reload();
+            } else {
+                setTimeout(nextStep, 1000);
+            }
         }
     }
 
-    function nextSlide() {
-        state.step++;
-        if (state.step >= state.session.length) {
-            levelComplete();
+    function nextStep() {
+        session.step++;
+        if (session.step >= session.total) {
+            user.lvl++;
+            Storage.set('my_lvl', user.lvl);
+            alert("¡Nivel Completado! 🎉");
+            closeLesson();
+            renderMap();
         } else {
             renderCard();
         }
     }
 
-    // -- SPEAKING LOGIC --
-    function toggleMic(targetPhrase) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            alert("Browser doesn't support speech. Use Chrome.");
-            checkAnswer(targetPhrase, targetPhrase); // Auto-pass for non-supported browsers
-            return;
-        }
-
-        const micContainer = document.getElementById('mic-container');
-        micContainer.classList.add('mic-listening');
-        
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'en-US';
-        recognition.interimResults = false;
-
-        recognition.start();
-
-        recognition.onresult = (event) => {
-            micContainer.classList.remove('mic-listening');
-            const transcript = event.results[0][0].transcript.toLowerCase();
-            const cleanTarget = targetPhrase.toLowerCase().replace(/[.,]/g, '');
-            const cleanInput = transcript.replace(/[.,]/g, '');
-
-            document.getElementById('speech-result').innerText = `"${transcript}"`;
-
-            // Fuzzy matching (checking if mostly correct)
-            if (cleanInput.includes(cleanTarget) || cleanInput === cleanTarget) {
-                setTimeout(() => showFeedback(true, targetPhrase), 500);
-            } else {
-                setTimeout(() => showFeedback(false, targetPhrase), 1000);
-            }
-        };
-
-        recognition.onerror = () => {
-            micContainer.classList.remove('mic-listening');
-            alert("Microphone error. Try again.");
-        };
-    }
-
-    // -- GAME STATES --
-    function levelComplete() {
-        if (state.isJump) {
-            state.level += 10;
-        } else if (state.level < 100) {
-            state.level++;
-        }
-        localStorage.setItem('ll_level', state.level);
-        document.getElementById('level-display').innerText = state.level;
-        exitLesson();
+    function closeLesson() {
+        document.getElementById('lesson-ui').style.display = 'none';
         renderMap();
-        alert("Level Complete! Logic & Precision increased.");
     }
 
-    function gameOver() {
-        alert("Out of hearts! Restarting session...");
-        state.hearts = 5;
-        document.getElementById('hearts-display').innerText = 5;
-        exitLesson();
-    }
-
-    function exitLesson() {
-        document.getElementById('lesson-layer').style.display = 'none';
-    }
-
-    function initJump() {
-        if(confirm("Jump 10 levels? High difficulty. One mistake = Game Over.")) {
-            startSession(state.level, true);
+    function tryJump() {
+        if(confirm("¿Saltar 10 niveles? Si fallas pierdes todo.")) {
+            startLevel(user.lvl + 10, true);
         }
     }
 
