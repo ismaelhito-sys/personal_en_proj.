@@ -3,158 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English Quest: 100 Levels Generator</title>
+    <title>English Quest Ultra</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #58cc02; --blue: #1cb0f6; --error: #ff4b4b; --gray: #e5e5e5; --text: #4b4b4b; }
-        body { font-family: 'Nunito', sans-serif; margin: 0; background: #fff; overflow-x: hidden; }
+        :root { --primary: #58cc02; --error: #ff4b4b; --gray: #e5e5e5; --blue: #1cb0f6; }
+        body { font-family: 'Nunito', sans-serif; margin: 0; background: #fff; touch-action: manipulation; }
         
-        /* Dashboard */
-        .header { position: sticky; top: 0; background: white; border-bottom: 2px solid var(--gray); padding: 15px; display: flex; justify-content: space-around; z-index: 100; }
+        /* Dashboard & Map */
+        .top-nav { position: sticky; top: 0; background: white; border-bottom: 2px solid var(--gray); padding: 15px; display: flex; justify-content: space-around; z-index: 100; }
         .stat { font-weight: 900; font-size: 1.2rem; }
-
-        /* Path Generator */
-        .path { display: flex; flex-direction: column-reverse; align-items: center; padding: 50px 0; background: #f7f7f7; }
-        .node { 
-            width: 70px; height: 70px; border-radius: 50%; border: none; 
-            margin: 15px 0; cursor: pointer; font-weight: 900; color: white;
-            transition: 0.2s; position: relative;
-        }
-        .node.locked { background: var(--gray); box-shadow: 0 6px 0 #afafaf; }
-        .node.unlocked { background: var(--primary); box-shadow: 0 6px 0 var(--primary-dark); }
-        .node.active { transform: scale(1.2); border: 4px solid var(--blue); }
+        .path { display: flex; flex-direction: column-reverse; align-items: center; padding: 40px 0; background: #f7f7f7; min-height: 100vh; }
         
-        /* Jump Feature */
-        .jump-zone { position: fixed; bottom: 20px; right: 20px; z-index: 50; }
-        .btn-jump { background: var(--blue); color: white; border: none; padding: 15px; border-radius: 20px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #1899d6; }
-
-        /* Lesson UI */
-        .overlay { position: fixed; inset: 0; background: white; display: none; flex-direction: column; z-index: 200; }
-        .progress-bar { height: 12px; background: var(--gray); border-radius: 6px; margin: 20px; flex-grow: 1; }
-        .progress-inner { height: 100%; background: var(--primary); width: 0%; transition: 0.3s; }
-        .content { padding: 40px 20px; text-align: center; max-width: 500px; margin: 0 auto; }
-        .option { 
-            display: block; width: 100%; padding: 15px; margin: 10px 0; 
-            border: 2px solid var(--gray); border-radius: 12px; background: white;
-            font-size: 1.1rem; cursor: pointer; font-family: inherit;
+        .level-node { 
+            width: 75px; height: 75px; border-radius: 50%; border: none; margin: 10px 0;
+            color: white; font-weight: 900; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 6px 0 #afafaf; background: var(--gray);
         }
-        .option.correct { background: #dcfce7; border-color: var(--primary); }
-        .option.wrong { background: #fee2e2; border-color: var(--error); }
+        .unlocked { background: var(--primary); box-shadow: 0 6px 0 var(--primary-dark); }
+        .current { border: 4px solid var(--blue); transform: scale(1.1); }
+
+        /* Modern Overlay */
+        .overlay { position: fixed; inset: 0; background: white; display: none; flex-direction: column; z-index: 200; }
+        .header-lesson { padding: 15px; display: flex; align-items: center; gap: 15px; border-bottom: 2px solid var(--gray); }
+        .progress-container { flex-grow: 1; height: 14px; background: var(--gray); border-radius: 7px; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--primary); width: 0%; transition: 0.4s; }
+
+        .lesson-body { padding: 30px 20px; max-width: 500px; margin: 0 auto; text-align: center; width: 100%; box-sizing: border-box; }
+        .q-text { font-size: 1.6rem; font-weight: 800; margin-bottom: 30px; color: #3c3c3c; }
+        
+        .option { 
+            display: block; width: 100%; padding: 18px; margin: 12px 0; 
+            border: 2px solid var(--gray); border-bottom: 5px solid var(--gray);
+            border-radius: 16px; background: white; font-size: 1.1rem; 
+            font-weight: 700; cursor: pointer; transition: 0.1s;
+        }
+        .option:active { transform: translateY(3px); border-bottom-width: 2px; }
+        .option.correct { background: #dcfce7; border-color: var(--primary); color: #166534; }
+        .option.wrong { background: #fee2e2; border-color: var(--error); color: #991b1b; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="stat" style="color:#ffc800">⭐ LVL: <span id="current-lvl-display">1</span></div>
-        <div class="stat" style="color:var(--error)">❤️ <span id="hearts">5</span></div>
+    <div class="top-nav">
+        <div class="stat" style="color:#ffc800">⭐ LVL <span id="user-lvl">1</span></div>
+        <div class="stat" style="color:var(--error)">❤️ <span id="global-hearts">5</span></div>
     </div>
 
-    <div class="path" id="level-path"></div>
+    <div class="path" id="map"></div>
 
-    <div class="jump-zone">
-        <button class="btn-jump" onclick="triggerJumpTest()">SKIP 10 LEVELS ⚡</button>
-    </div>
-
-    <div class="overlay" id="overlay">
-        <div style="display:flex; align-items:center; padding: 10px;">
-            <button onclick="closeLesson()" style="border:none; background:none; font-size:2rem; cursor:pointer">×</button>
-            <div class="progress-bar"><div class="progress-inner" id="progress-fill"></div></div>
+    <div class="overlay" id="lesson-ui">
+        <div class="header-lesson">
+            <button onclick="exitLesson()" style="border:none; background:none; font-size:1.8rem; cursor:pointer">✕</button>
+            <div class="progress-container"><div class="progress-bar" id="p-bar"></div></div>
+            <div class="stat" style="color:var(--error)">❤️ <span id="lesson-hearts">5</span></div>
         </div>
-        <div class="content" id="lesson-content"></div>
+        <div class="lesson-body" id="lesson-body"></div>
     </div>
 
 <script>
-    // Configuración del Motor
-    let userLevel = parseInt(localStorage.getItem('userLvl')) || 1;
-    let hearts = 5;
-    let currentSessionLvl = 1;
-    let sessionSteps = 0;
-
-    const database = [
-        { q: "I'm looking forward to ___ you.", a: ["see", "seeing", "seen"], c: 1, lvl: 1 },
-        { q: "If I ___ more time, I'd travel.", a: ["have", "had", "would have"], c: 1, lvl: 5 },
-        { q: "By next year, I ___ my degree.", a: ["will finish", "will have finished", "finish"], c: 1, lvl: 15 },
-        { q: "Hardly ___ the door when it rained.", a: ["I opened", "did I open", "had I opened"], c: 2, lvl: 40 }
+    // --- DATABASE EXTENSA (Motor de selección) ---
+    const questionBank = [
+        { q: "I'm interested ___ learning English.", a: ["in", "on", "at"], c: 0, tag: "prepositions" },
+        { q: "She ___ to the gym every day.", a: ["go", "goes", "gone"], c: 1, tag: "present" },
+        { q: "If I were you, I ___ study more.", a: ["will", "would", "shall"], c: 1, tag: "conditional" },
+        { q: "The cake ___ by my mother.", a: ["was made", "is make", "was make"], c: 0, tag: "passive" },
+        { q: "I haven't seen him ___ 2010.", a: ["for", "since", "during"], c: 1, tag: "time" },
+        { q: "I'd rather you ___ here.", a: ["stay", "stayed", "to stay"], c: 1, tag: "subjunctive" },
+        { q: "He denied ___ the money.", a: ["steal", "to steal", "stealing"], c: 2, tag: "gerunds" },
+        { q: "Unless it ___ , we'll go out.", a: ["rains", "will rain", "rained"], c: 0, tag: "conditional" }
     ];
 
-    function generatePath() {
-        const path = document.getElementById('level-path');
-        path.innerHTML = '';
+    let userLvl = parseInt(localStorage.getItem('userLvl')) || 1;
+    let totalHearts = 5;
+    let currentQuestions = [];
+    let currentStep = 0;
+    const QUESTIONS_PER_LEVEL = 5;
+
+    // --- SOUND ENGINE (Web Audio API) ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(freq, type) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = type; osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+    }
+
+    // --- GAME LOGIC ---
+    function renderMap() {
+        const map = document.getElementById('map');
+        map.innerHTML = '';
         for(let i = 1; i <= 100; i++) {
-            const node = document.createElement('button');
-            node.className = `node ${i <= userLevel ? 'unlocked' : 'locked'} ${i === userLevel ? 'active' : ''}`;
-            node.innerHTML = i;
-            node.onclick = () => startLevel(i);
-            // Efecto zig-zag
-            node.style.marginLeft = `${Math.sin(i) * 50}px`;
-            path.appendChild(node);
+            const btn = document.createElement('button');
+            btn.className = `level-node ${i <= userLvl ? 'unlocked' : ''} ${i === userLvl ? 'current' : ''}`;
+            btn.innerHTML = i;
+            btn.onclick = () => startSession(i);
+            btn.style.marginLeft = `${Math.sin(i * 0.8) * 60}px`;
+            map.appendChild(btn);
         }
-        document.getElementById('current-lvl-display').innerText = userLevel;
+        document.getElementById('user-lvl').innerText = userLvl;
         window.scrollTo(0, document.body.scrollHeight);
     }
 
-    function startLevel(lvl, isJump = false) {
-        if(lvl > userLevel && !isJump) return;
-        currentSessionLvl = lvl;
-        sessionSteps = 0;
-        document.getElementById('overlay').style.display = 'flex';
-        renderQuestion(isJump);
+    function startSession(lvl) {
+        if(lvl > userLvl || totalHearts <= 0) return;
+        currentStep = 0;
+        // Mezclamos y seleccionamos 5 preguntas únicas
+        currentQuestions = [...questionBank].sort(() => 0.5 - Math.random()).slice(0, QUESTIONS_PER_LEVEL);
+        document.getElementById('lesson-ui').style.display = 'flex';
+        renderQuestion();
     }
 
-    function renderQuestion(isJump) {
-        // Generador Procedural: busca preguntas cerca del nivel o genera una genérica
-        const pool = database.filter(d => d.lvl <= currentSessionLvl);
-        const question = pool[Math.floor(Math.random() * pool.length)];
-        
-        const content = document.getElementById('lesson-content');
-        content.innerHTML = `
-            <h2>${isJump ? '🚀 JUMP TEST' : 'Level ' + currentSessionLvl}</h2>
-            <p class="stat">${question.q}</p>
-            <div id="options-grid">
-                ${question.a.map((opt, i) => `
-                    <button class="option" onclick="evalAns(this, ${i}, ${question.c}, ${isJump})">${opt}</button>
-                `).join('')}
+    function renderQuestion() {
+        const q = currentQuestions[currentStep];
+        const body = document.getElementById('lesson-body');
+        document.getElementById('lesson-hearts').innerText = totalHearts;
+        document.getElementById('p-bar').style.width = `${(currentStep / QUESTIONS_PER_LEVEL) * 100}%`;
+
+        body.innerHTML = `
+            <div class="q-text">${q.q}</div>
+            <div id="opts">
+                ${q.a.map((opt, i) => `<button class="option" onclick="handleSelect(this, ${i})">${opt}</button>`).join('')}
             </div>
         `;
     }
 
-    function evalAns(btn, selected, correct, isJump) {
-        if(selected === correct) {
+    function handleSelect(btn, idx) {
+        const q = currentQuestions[currentStep];
+        const allOpts = document.querySelectorAll('.option');
+        allOpts.forEach(o => o.style.pointerEvents = 'none');
+
+        if(idx === q.c) {
             btn.classList.add('correct');
+            playSound(880, 'sine'); // Sonido acierto (La5)
             setTimeout(() => {
-                if(isJump) {
-                    userLevel = Math.min(100, userLevel + 10);
-                    localStorage.setItem('userLvl', userLevel);
-                    closeLesson();
-                    generatePath();
+                currentStep++;
+                if(currentStep < QUESTIONS_PER_LEVEL) {
+                    renderQuestion();
                 } else {
-                    userLevel = Math.max(userLevel, currentSessionLvl + 1);
-                    localStorage.setItem('userLvl', userLevel);
-                    closeLesson();
-                    generatePath();
+                    completeLevel();
                 }
-            }, 500);
+            }, 1000);
         } else {
             btn.classList.add('wrong');
-            hearts--;
-            document.getElementById('hearts').innerText = hearts;
-            if(isJump) { 
-                alert("JUMP FAILED! You lost your chance."); 
-                hearts = 0;
-                location.reload(); 
-            }
+            playSound(220, 'square'); // Sonido fallo (La3)
+            totalHearts--;
+            document.getElementById('lesson-hearts').innerText = totalHearts;
+            document.getElementById('global-hearts').innerText = totalHearts;
+            
+            setTimeout(() => {
+                if(totalHearts <= 0) {
+                    alert("GAME OVER - Vuelve a empezar");
+                    location.reload();
+                } else {
+                    renderQuestion(); // Re-intenta la misma
+                }
+            }, 1000);
         }
     }
 
-    function triggerJumpTest() {
-        if(confirm("Si fallas el test de salto, perderás todas tus vidas. ¿Aceptas el reto?")) {
-            startLevel(userLevel + 10, true);
-        }
+    function completeLevel() {
+        if(userLvl < 100) userLvl++;
+        localStorage.setItem('userLvl', userLvl);
+        alert("¡Nivel superado!");
+        exitLesson();
+        renderMap();
     }
 
-    function closeLesson() { document.getElementById('overlay').style.display = 'none'; }
-    
-    generatePath();
+    function exitLesson() {
+        document.getElementById('lesson-ui').style.display = 'none';
+    }
+
+    renderMap();
 </script>
 </body>
 </html>
