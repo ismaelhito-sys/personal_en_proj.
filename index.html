@@ -3,549 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English Nexus - Intermediate Hub</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>English Quest: 100 Levels Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #6366f1; /* Indigo */
-            --primary-dark: #4f46e5;
-            --accent: #06b6d4; /* Cyan */
-            --success: #10b981;
-            --error: #ef4444;
-            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --text-dark: #1f2937;
-            --text-light: #6b7280;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: var(--bg-gradient);
-            min-height: 100vh;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            color: var(--text-dark);
-        }
-
-        .app-container {
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            width: 100%;
-            max-width: 700px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* Header & Progress */
-        .header {
-            padding: 2rem 2rem 1rem;
-            text-align: center;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 1.8rem;
-            background: linear-gradient(to right, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .progress-container {
-            height: 6px;
-            background: #e5e7eb;
-            margin-top: 1rem;
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(to right, var(--primary), var(--accent));
-            width: 0%;
-            transition: width 0.6s ease;
-        }
-
-        /* Main Content Area */
-        .content-area {
-            padding: 2rem;
-            min-height: 300px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        /* Mode Switcher (Study vs Challenge) */
-        .mode-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            margin-bottom: 1rem;
-        }
-        .mode-study { background: #e0e7ff; color: var(--primary-dark); }
-        .mode-challenge { background: #ffedd5; color: #c2410c; }
-
-        /* Flashcard Styles */
-        .main-phrase {
-            font-size: 1.6rem;
-            font-weight: 600;
-            line-height: 1.4;
-            margin-bottom: 1rem;
-            color: var(--text-dark);
-        }
-
-        .highlight { color: var(--primary); font-weight: 700; }
-
-        .translation-box {
-            background: #f3f4f6;
-            padding: 1rem;
-            border-left: 4px solid var(--accent);
-            border-radius: 8px;
-            color: var(--text-light);
-            font-style: italic;
-            display: none; /* Hidden by default */
-            margin-bottom: 1.5rem;
-        }
-
-        .context-info {
-            font-size: 0.9rem;
-            color: var(--text-light);
-            margin-bottom: 2rem;
-        }
+        :root { --primary: #58cc02; --blue: #1cb0f6; --error: #ff4b4b; --gray: #e5e5e5; --text: #4b4b4b; }
+        body { font-family: 'Nunito', sans-serif; margin: 0; background: #fff; overflow-x: hidden; }
         
-        /* Quiz Styles */
-        .quiz-options { list-style: none; padding: 0; margin: 0 0 1.5rem 0; }
-        .quiz-btn {
-            width: 100%;
-            padding: 12px 16px;
-            margin-bottom: 8px;
-            border: 2px solid #e5e7eb;
-            background: white;
-            border-radius: 12px;
-            text-align: left;
-            font-family: inherit;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .quiz-btn:hover { border-color: var(--primary); background: #eef2ff; }
-        .quiz-btn.correct { background: #d1fae5; border-color: var(--success); color: #065f46; }
-        .quiz-btn.wrong { background: #fee2e2; border-color: var(--error); color: #991b1b; }
+        /* Dashboard */
+        .header { position: sticky; top: 0; background: white; border-bottom: 2px solid var(--gray); padding: 15px; display: flex; justify-content: space-around; z-index: 100; }
+        .stat { font-weight: 900; font-size: 1.2rem; }
 
-        /* Controls & Mic */
-        .controls-bar {
-            padding: 1.5rem 2rem;
-            background: rgba(255,255,255,0.5);
-            border-top: 1px solid #e5e7eb;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            justify-content: space-between;
+        /* Path Generator */
+        .path { display: flex; flex-direction: column-reverse; align-items: center; padding: 50px 0; background: #f7f7f7; }
+        .node { 
+            width: 70px; height: 70px; border-radius: 50%; border: none; 
+            margin: 15px 0; cursor: pointer; font-weight: 900; color: white;
+            transition: 0.2s; position: relative;
         }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: inherit;
-            transition: transform 0.2s, opacity 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn:hover { transform: translateY(-2px); opacity: 0.9; }
-        .btn:active { transform: translateY(0); }
-
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
-        .btn-secondary { background: #e5e7eb; color: var(--text-dark); }
+        .node.locked { background: var(--gray); box-shadow: 0 6px 0 #afafaf; }
+        .node.unlocked { background: var(--primary); box-shadow: 0 6px 0 var(--primary-dark); }
+        .node.active { transform: scale(1.2); border: 4px solid var(--blue); }
         
-        .mic-container { position: relative; }
-        .btn-mic {
-            width: 60px; height: 60px; border-radius: 50%; padding: 0;
-            justify-content: center; font-size: 1.5rem;
-            background: linear-gradient(135deg, var(--error), #c026d3); color: white;
-             box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-        }
-        .mic-active { animation: pulse 1.5s infinite; }
+        /* Jump Feature */
+        .jump-zone { position: fixed; bottom: 20px; right: 20px; z-index: 50; }
+        .btn-jump { background: var(--blue); color: white; border: none; padding: 15px; border-radius: 20px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #1899d6; }
 
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        /* Lesson UI */
+        .overlay { position: fixed; inset: 0; background: white; display: none; flex-direction: column; z-index: 200; }
+        .progress-bar { height: 12px; background: var(--gray); border-radius: 6px; margin: 20px; flex-grow: 1; }
+        .progress-inner { height: 100%; background: var(--primary); width: 0%; transition: 0.3s; }
+        .content { padding: 40px 20px; text-align: center; max-width: 500px; margin: 0 auto; }
+        .option { 
+            display: block; width: 100%; padding: 15px; margin: 10px 0; 
+            border: 2px solid var(--gray); border-radius: 12px; background: white;
+            font-size: 1.1rem; cursor: pointer; font-family: inherit;
         }
-
-        /* Feedback Messages */
-        #feedback-message {
-            text-align: center; font-weight: 600; min-height: 1.2em;
-            margin-top: 1rem; transition: color 0.3s;
-        }
-        .hidden { display: none !important; }
+        .option.correct { background: #dcfce7; border-color: var(--primary); }
+        .option.wrong { background: #fee2e2; border-color: var(--error); }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <header class="header">
-        <h1>English Nexus <span>Hub</span></h1>
-        <div class="progress-container">
-            <div class="progress-bar" id="progress-bar"></div>
-        </div>
-    </header>
-
-    <div class="content-area" id="content-area">
-        </div>
-
-    <div class="controls-bar" id="controls-bar">
-        <button class="btn btn-secondary" id="btn-audio" onclick="playAudio()">🔊 Listen</button>
-        <button class="btn btn-secondary" id="btn-reveal" onclick="toggleTranslation()">👁️ Reveal</button>
-        
-        <div class="mic-container hidden" id="mic-wrapper">
-             <button class="btn btn-mic" id="btn-mic" onmousedown="startListening()" onmouseup="stopListening()">🎤</button>
-        </div>
-
-        <button class="btn btn-primary" id="btn-action" onclick="handleAction()">Start Challenge →</button>
+    <div class="header">
+        <div class="stat" style="color:#ffc800">⭐ LVL: <span id="current-lvl-display">1</span></div>
+        <div class="stat" style="color:var(--error)">❤️ <span id="hearts">5</span></div>
     </div>
-     <p id="feedback-message"></p>
-     <p style="text-align: center; font-size: 0.8rem; opacity: 0.7; margin-bottom: 1rem;">*If mic fails, try running locally outside chat*</p>
-</div>
+
+    <div class="path" id="level-path"></div>
+
+    <div class="jump-zone">
+        <button class="btn-jump" onclick="triggerJumpTest()">SKIP 10 LEVELS ⚡</button>
+    </div>
+
+    <div class="overlay" id="overlay">
+        <div style="display:flex; align-items:center; padding: 10px;">
+            <button onclick="closeLesson()" style="border:none; background:none; font-size:2rem; cursor:pointer">×</button>
+            <div class="progress-bar"><div class="progress-inner" id="progress-fill"></div></div>
+        </div>
+        <div class="content" id="lesson-content"></div>
+    </div>
 
 <script>
-    // ================= DATASET (10 Items) =================
+    // Configuración del Motor
+    let userLevel = parseInt(localStorage.getItem('userLvl')) || 1;
+    let hearts = 5;
+    let currentSessionLvl = 1;
+    let sessionSteps = 0;
+
     const database = [
-        {
-            id: 1,
-            phrase: "I've been <span class='highlight'>putting off</span> this report all week, but I must do it today.",
-            translation: "He estado posponiendo este informe toda la semana, pero debo hacerlo hoy.",
-            context: "Phrasal Verb (Procrastination)",
-            type: "quiz",
-            question: "Which sentence uses 'put off' correctly?",
-            options: ["The smell put me off my food.", "I put off my coat when I entered.", "Can you put me off at the next station?"],
-            correctIndex: 0 // A is correct (to discourage/repel)
-        },
-        {
-            id: 2,
-            phrase: "If I <span class='highlight'>hadn't missed</span> the train, I <span class='highlight'>would be</span> in London now.",
-            translation: "Si no hubiera perdido el tren, estaría en Londres ahora.",
-            context: "Mixed Conditional (Past regret -> Present consequence)",
-            type: "speak",
-            targetText: "If I hadn't missed the train, I would be in London now."
-        },
-        {
-            id: 3,
-            phrase: "We need to <span class='highlight'>look into</span> alternative energy sources immediately.",
-            translation: "Necesitamos investigar fuentes de energía alternativas inmediatamente.",
-            context: "Phrasal Verb (Investigate)",
-            type: "quiz",
-            question: "What is a formal synonym for 'look into'?",
-            options: ["Discover", "Investigate", "Watch"],
-            correctIndex: 1
-        },
-        {
-            id: 4,
-            phrase: "The new policy is expected to <span class='highlight'>bring about</span> significant changes.",
-            translation: "Se espera que la nueva política provoque cambios significativos.",
-            context: "Phrasal Verb (Cause to happen)",
-            type: "speak",
-            targetText: "The new policy is expected to bring about significant changes."
-        },
-        {
-             id: 5,
-            phrase: "Hardly <span class='highlight'>had I arrived</span> when the phone rang.",
-            translation: "Apenas había llegado cuando sonó el teléfono.",
-            context: "Inversion (Formal emphasis)",
-             type: "quiz",
-             question: "Choose the correct alternative structure:",
-             options: ["No sooner had I arrived than the phone rang.", "As soon as I arrived, the phone rung.", "Barely I had arrived when the phone rang."],
-             correctIndex: 0
-        },
-         {
-            id: 6,
-            phrase: "I can't <span class='highlight'>put up with</span> this noise any longer.",
-            translation: "No puedo aguantar este ruido más tiempo.",
-            context: "Phrasal Verb (Tolerate)",
-            type: "speak",
-            targetText: "I can't put up with this noise any longer."
-        },
-         {
-            id: 7,
-            phrase: "It's high time you <span class='highlight'>started</span> taking this seriously.",
-            translation: "Ya es hora de que empieces a tomarte esto en serio.",
-            context: "Unreal Past ('It's high time' + Past Simple)",
-            type: "quiz",
-            question: "Why do we use past tense 'started'?",
-            options: ["Because it happened yesterday.", "It refers to a hypothetical present/future necessity.", "It is a passive construction."],
-            correctIndex: 1
-        },
-         {
-            id: 8,
-            phrase: "They <span class='highlight'>are believed to have left</span> the country already.",
-            translation: "Se cree que ya han abandonado el país.",
-            context: "Passive Voice with Reporting Verbs",
-             type: "speak",
-             targetText: "They are believed to have left the country already."
-        },
-        {
-            id: 9,
-            phrase: "We've run <span class='highlight'>out of</span> milk; I need to go to the shop.",
-            translation: "Nos hemos quedado sin leche; necesito ir a la tienda.",
-            context: "Phrasal Verb (Exhaust supply)",
-            type: "quiz",
-            question: "Complete: 'I'm trying to cut ____ ____ sugar.'",
-            options: ["down on", "out of", "away from"],
-            correctIndex: 0
-        },
-        {
-            id: 10,
-            phrase: "Despite <span class='highlight'>feeling</span> unwell, she went to work.",
-            translation: "A pesar de sentirse mal, fue a trabajar.",
-            context: "Contrast Connector + Gerund",
-            type: "speak",
-            targetText: "Despite feeling unwell, she went to work."
-        }
+        { q: "I'm looking forward to ___ you.", a: ["see", "seeing", "seen"], c: 1, lvl: 1 },
+        { q: "If I ___ more time, I'd travel.", a: ["have", "had", "would have"], c: 1, lvl: 5 },
+        { q: "By next year, I ___ my degree.", a: ["will finish", "will have finished", "finish"], c: 1, lvl: 15 },
+        { q: "Hardly ___ the door when it rained.", a: ["I opened", "did I open", "had I opened"], c: 2, lvl: 40 }
     ];
 
-    // ================= STATE MANAGEMENT =================
-    let currentIndex = 0;
-    let isStudyMode = true; // true = Study, false = Challenge
-    let recognition;
-    let isListening = false;
-
-    // DOM Elements
-    const contentArea = document.getElementById('content-area');
-    const progressBar = document.getElementById('progress-bar');
-    const btnAction = document.getElementById('btn-action');
-    const btnAudio = document.getElementById('btn-audio');
-    const btnReveal = document.getElementById('btn-reveal');
-    const micWrapper = document.getElementById('mic-wrapper');
-    const feedbackMsg = document.getElementById('feedback-message');
-
-    // ================= CORE FUNCTIONS =================
-    function init() {
-        setupSpeechRecognition();
-        renderState();
-    }
-
-    function renderState() {
-        updateProgress();
-        feedbackMsg.innerText = "";
-        feedbackMsg.className = "";
-
-        if (isStudyMode) {
-            renderStudyMode();
-        } else {
-            renderChallengeMode();
+    function generatePath() {
+        const path = document.getElementById('level-path');
+        path.innerHTML = '';
+        for(let i = 1; i <= 100; i++) {
+            const node = document.createElement('button');
+            node.className = `node ${i <= userLevel ? 'unlocked' : 'locked'} ${i === userLevel ? 'active' : ''}`;
+            node.innerHTML = i;
+            node.onclick = () => startLevel(i);
+            // Efecto zig-zag
+            node.style.marginLeft = `${Math.sin(i) * 50}px`;
+            path.appendChild(node);
         }
+        document.getElementById('current-lvl-display').innerText = userLevel;
+        window.scrollTo(0, document.body.scrollHeight);
     }
 
-    function renderStudyMode() {
-        const item = database[currentIndex];
-        contentArea.innerHTML = `
-            <span class="mode-badge mode-study">Study Phase</span>
-            <div class="main-phrase">${item.phrase}</div>
-            <div class="translation-box" id="translation">${item.translation}</div>
-            <div class="context-info">💡 Context: ${item.context}</div>
-        `;
-        // Reset controls for study mode
-        btnAction.innerText = "Start Challenge →";
-        btnAction.onclick = handleAction;
-        btnAudio.classList.remove('hidden');
-        btnReveal.classList.remove('hidden');
-        micWrapper.classList.add('hidden');
+    function startLevel(lvl, isJump = false) {
+        if(lvl > userLevel && !isJump) return;
+        currentSessionLvl = lvl;
+        sessionSteps = 0;
+        document.getElementById('overlay').style.display = 'flex';
+        renderQuestion(isJump);
     }
 
-    function renderChallengeMode() {
-        const item = database[currentIndex];
-        btnAudio.classList.add('hidden');
-        btnReveal.classList.add('hidden');
-
-        if (item.type === 'quiz') {
-            renderQuiz(item);
-        } else if (item.type === 'speak') {
-            renderSpeak(item);
-        }
-    }
-
-    // ----- QUIZ LOGIC -----
-    function renderQuiz(item) {
-         micWrapper.classList.add('hidden');
-         let optionsHTML = item.options.map((opt, index) => 
-             `<li><button class="quiz-btn" onclick="checkAnswer(${index})">${opt}</button></li>`
-         ).join('');
-
-         contentArea.innerHTML = `
-            <span class="mode-badge mode-challenge">Quiz Challenge</span>
-            <div class="main-phrase" style="font-size: 1.3rem">${item.question}</div>
-            <ul class="quiz-options">${optionsHTML}</ul>
-        `;
-        btnAction.classList.add('hidden'); // Hide until answered
-    }
-
-    function checkAnswer(selectedIndex) {
-        const item = database[currentIndex];
-        const buttons = document.querySelectorAll('.quiz-btn');
+    function renderQuestion(isJump) {
+        // Generador Procedural: busca preguntas cerca del nivel o genera una genérica
+        const pool = database.filter(d => d.lvl <= currentSessionLvl);
+        const question = pool[Math.floor(Math.random() * pool.length)];
         
-        if (selectedIndex === item.correctIndex) {
-            buttons[selectedIndex].classList.add('correct');
-            showFeedback("Correct! Well done.", "success");
-        } else {
-            buttons[selectedIndex].classList.add('wrong');
-            buttons[item.correctIndex].classList.add('correct');
-            showFeedback("Oops! Review the correct option.", "error");
-        }
-        
-        // Disable all buttons
-        buttons.forEach(btn => btn.disabled = true);
-        
-        // Show next button
-        btnAction.innerText = "Next Lesson →";
-        btnAction.onclick = nextLesson;
-        btnAction.classList.remove('hidden');
-    }
-
-    // ----- SPEAKING LOGIC -----
-    function renderSpeak(item) {
-        micWrapper.classList.remove('hidden');
-        contentArea.innerHTML = `
-            <span class="mode-badge mode-challenge">Pronunciation Challenge</span>
-            <p style="margin-bottom: 1rem;">Press and HOLD the mic button and read the phrase aloud:</p>
-            <div class="main-phrase" style="font-size: 1.3rem; color: var(--primary-dark)">
-                "${item.targetText}"
+        const content = document.getElementById('lesson-content');
+        content.innerHTML = `
+            <h2>${isJump ? '🚀 JUMP TEST' : 'Level ' + currentSessionLvl}</h2>
+            <p class="stat">${question.q}</p>
+            <div id="options-grid">
+                ${question.a.map((opt, i) => `
+                    <button class="option" onclick="evalAns(this, ${i}, ${question.c}, ${isJump})">${opt}</button>
+                `).join('')}
             </div>
-            <p id="speech-output" style="font-style:italic; color: #666; min-height: 1.5em">...</p>
         `;
-         btnAction.classList.add('hidden'); // Hide until spoken
     }
 
-    function setupSpeechRecognition() {
-        // Check browser support
-        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            recognition.lang = 'en-US';
-            recognition.interimResults = true;
-            recognition.continuous = false;
-
-            recognition.onstart = () => {
-                isListening = true;
-                document.getElementById('btn-mic').classList.add('mic-active');
-                document.getElementById('speech-output').innerText = "Listening...";
-            };
-
-            recognition.onresult = (event) => {
-                const transcript = Array.from(event.results)
-                    .map(result => result[0])
-                    .map(result => result.transcript)
-                    .join('');
-                document.getElementById('speech-output').innerText = `You said: "${transcript}"`;
-                evaluateSpeech(transcript);
-            };
-
-            recognition.onend = () => {
-                 isListening = false;
-                 document.getElementById('btn-mic').classList.remove('mic-active');
-            };
-
-            recognition.onerror = (event) => {
-                isListening = false;
-                document.getElementById('btn-mic').classList.remove('mic-active');
-                let msg = "Microphone error.";
-                if (event.error === 'not-allowed') {
-                    msg = "⚠️ Microphone blocked by browser security. Try running locally.";
+    function evalAns(btn, selected, correct, isJump) {
+        if(selected === correct) {
+            btn.classList.add('correct');
+            setTimeout(() => {
+                if(isJump) {
+                    userLevel = Math.min(100, userLevel + 10);
+                    localStorage.setItem('userLvl', userLevel);
+                    closeLesson();
+                    generatePath();
+                } else {
+                    userLevel = Math.max(userLevel, currentSessionLvl + 1);
+                    localStorage.setItem('userLvl', userLevel);
+                    closeLesson();
+                    generatePath();
                 }
-                showFeedback(msg, "error");
-            };
+            }, 500);
         } else {
-             micWrapper.innerHTML = "<p style='color:red; font-size:0.8rem'>Speech recognition not supported in this browser.</p>";
+            btn.classList.add('wrong');
+            hearts--;
+            document.getElementById('hearts').innerText = hearts;
+            if(isJump) { 
+                alert("JUMP FAILED! You lost your chance."); 
+                hearts = 0;
+                location.reload(); 
+            }
         }
     }
 
-    function startListening() {
-        if (recognition && !isListening) {
-            feedbackMsg.innerText = "";
-            try {
-                 recognition.start();
-            } catch (e) { console.error(e); }
+    function triggerJumpTest() {
+        if(confirm("Si fallas el test de salto, perderás todas tus vidas. ¿Aceptas el reto?")) {
+            startLevel(userLevel + 10, true);
         }
     }
 
-    function stopListening() {
-        if (recognition && isListening) {
-            recognition.stop();
-        }
-    }
-
-    function evaluateSpeech(transcript) {
-        const target = database[currentIndex].targetText.toLowerCase().replace(/[.,]/g, '');
-        const attempt = transcript.toLowerCase().replace(/[.,]/g, '');
-        
-        // Simple check: if it contains 70% of the target phrase key words
-        // For simplicity here, we'll check if it includes the main verb/structure
-        const item = database[currentIndex];
-        // Extracting just a key part for easier matching in this demo
-        const keyPart = item.phrase.replace(/<[^>]*>/g, '').split(' ').slice(1,4).join(' ').toLowerCase().replace(/[.,]/g,'');
-
-        if (attempt.includes(keyPart) || attempt.length > target.length * 0.8) {
-             showFeedback("Excellent pronunciation!", "success");
-             btnAction.innerText = "Next Lesson →";
-             btnAction.onclick = nextLesson;
-             btnAction.classList.remove('hidden');
-        }
-    }
-
-
-    // ================= HELPER FUNCTIONS =================
-    function handleAction() {
-        if (isStudyMode) {
-            // Switch to challenge
-            isStudyMode = false;
-            renderState();
-        } else {
-            nextLesson();
-        }
-    }
-
-    function nextLesson() {
-        currentIndex = (currentIndex + 1) % database.length;
-        isStudyMode = true;
-        renderState();
-    }
-
-    function toggleTranslation() {
-        const el = document.getElementById('translation');
-        el.style.display = el.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function playAudio() {
-        // Strip HTML tags for speech
-        const text = database[currentIndex].phrase.replace(/<[^>]*>/g, '');
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        utterance.rate = 0.9;
-        window.speechSynthesis.speak(utterance);
-    }
-
-    function updateProgress() {
-        const progress = ((currentIndex) / database.length) * 100;
-        progressBar.style.width = `${progress}%`;
-    }
-
-    function showFeedback(text, type) {
-        feedbackMsg.innerText = text;
-        feedbackMsg.style.color = type === 'success' ? 'var(--success)' : 'var(--error)';
-    }
-
-    // Start App
-    init();
-
+    function closeLesson() { document.getElementById('overlay').style.display = 'none'; }
+    
+    generatePath();
 </script>
 </body>
 </html>
