@@ -180,3 +180,113 @@
 </script>
 </body>
 </html>
+        { q: "Unless it ___ , we'll go out.", a: ["rains", "will rain", "rained"], c: 0, tag: "conditional" }
+    ];
+
+    let userLvl = parseInt(localStorage.getItem('userLvl')) || 1;
+    let totalHearts = 5;
+    let currentQuestions = [];
+    let currentStep = 0;
+    const QUESTIONS_PER_LEVEL = 5;
+
+    // --- SOUND ENGINE (Web Audio API) ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(freq, type) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = type; osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+    }
+
+    // --- GAME LOGIC ---
+    function renderMap() {
+        const map = document.getElementById('map');
+        map.innerHTML = '';
+        for(let i = 1; i <= 100; i++) {
+            const btn = document.createElement('button');
+            btn.className = `level-node ${i <= userLvl ? 'unlocked' : ''} ${i === userLvl ? 'current' : ''}`;
+            btn.innerHTML = i;
+            btn.onclick = () => startSession(i);
+            btn.style.marginLeft = `${Math.sin(i * 0.8) * 60}px`;
+            map.appendChild(btn);
+        }
+        document.getElementById('user-lvl').innerText = userLvl;
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function startSession(lvl) {
+        if(lvl > userLvl || totalHearts <= 0) return;
+        currentStep = 0;
+        // Mezclamos y seleccionamos 5 preguntas únicas
+        currentQuestions = [...questionBank].sort(() => 0.5 - Math.random()).slice(0, QUESTIONS_PER_LEVEL);
+        document.getElementById('lesson-ui').style.display = 'flex';
+        renderQuestion();
+    }
+
+    function renderQuestion() {
+        const q = currentQuestions[currentStep];
+        const body = document.getElementById('lesson-body');
+        document.getElementById('lesson-hearts').innerText = totalHearts;
+        document.getElementById('p-bar').style.width = `${(currentStep / QUESTIONS_PER_LEVEL) * 100}%`;
+
+        body.innerHTML = `
+            <div class="q-text">${q.q}</div>
+            <div id="opts">
+                ${q.a.map((opt, i) => `<button class="option" onclick="handleSelect(this, ${i})">${opt}</button>`).join('')}
+            </div>
+        `;
+    }
+
+    function handleSelect(btn, idx) {
+        const q = currentQuestions[currentStep];
+        const allOpts = document.querySelectorAll('.option');
+        allOpts.forEach(o => o.style.pointerEvents = 'none');
+
+        if(idx === q.c) {
+            btn.classList.add('correct');
+            playSound(880, 'sine'); // Sonido acierto (La5)
+            setTimeout(() => {
+                currentStep++;
+                if(currentStep < QUESTIONS_PER_LEVEL) {
+                    renderQuestion();
+                } else {
+                    completeLevel();
+                }
+            }, 1000);
+        } else {
+            btn.classList.add('wrong');
+            playSound(220, 'square'); // Sonido fallo (La3)
+            totalHearts--;
+            document.getElementById('lesson-hearts').innerText = totalHearts;
+            document.getElementById('global-hearts').innerText = totalHearts;
+            
+            setTimeout(() => {
+                if(totalHearts <= 0) {
+                    alert("GAME OVER - Vuelve a empezar");
+                    location.reload();
+                } else {
+                    renderQuestion(); // Re-intenta la misma
+                }
+            }, 1000);
+        }
+    }
+
+    function completeLevel() {
+        if(userLvl < 100) userLvl++;
+        localStorage.setItem('userLvl', userLvl);
+        alert("¡Nivel superado!");
+        exitLesson();
+        renderMap();
+    }
+
+    function exitLesson() {
+        document.getElementById('lesson-ui').style.display = 'none';
+    }
+
+    renderMap();
+</script>
+</body>
+</html>
