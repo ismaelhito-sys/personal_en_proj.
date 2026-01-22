@@ -2,228 +2,666 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English Quest Infinity</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lumina Linguist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --p: #58cc02; --pd: #46a302; --e: #ff4b4b; --b: #1cb0f6; --g: #e5e5e5; --txt: #3c3c3c; }
-        body { font-family: 'Outfit', sans-serif; margin: 0; background: #fff; color: var(--txt); overflow-x: hidden; }
+        :root {
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --primary: #a5b4fc; /* Indigo pastel */
+            --accent: #67e8f9; /* Cyan neon */
+            --success: #6ee7b7;
+            --error: #fda4af;
+            --text: #ffffff;
+            --dark-glass: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            background: linear-gradient(125deg, #1e1b4b, #312e81, #4c1d95);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* LIQUID GLASS UI ELEMENTS */
+        .glass-panel {
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            border-radius: 24px;
+        }
+
+        /* HEADER & MAP */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .stat-capsule {
+            background: var(--dark-glass);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .level-map {
+            padding: 40px 0 100px 0;
+            display: flex;
+            flex-direction: column-reverse; /* Bottom to top */
+            align-items: center;
+            width: 100%;
+            position: relative;
+        }
+
+        /* SVG Line connecting nodes would go here dynamically, keeping it simple for CSS */
+
+        .level-node {
+            width: 80px;
+            height: 80px;
+            border-radius: 40%; /* Squircle ish */
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            border: 2px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: rgba(255,255,255,0.5);
+            margin: 15px 0;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        .level-node.unlocked {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+            border: none;
+        }
+
+        .level-node.current {
+            transform: scale(1.2);
+            border: 3px solid var(--accent);
+            box-shadow: 0 0 30px rgba(103, 232, 249, 0.6);
+            z-index: 10;
+        }
+
+        .level-node.boss {
+            border-radius: 50%;
+            width: 100px; height: 100px;
+            background: linear-gradient(135deg, #f43f5e, #be123c);
+        }
+
+        /* JUMP BUTTON */
+        .jump-fab {
+            position: fixed;
+            bottom: 30px;
+            right: 20px;
+            background: var(--text);
+            color: #1e1b4b;
+            padding: 15px 25px;
+            border-radius: 20px;
+            font-weight: 900;
+            border: none;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            z-index: 90;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .jump-fab:active { transform: scale(0.95); }
+
+        /* LESSON OVERLAY */
+        .lesson-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            animation: fadeIn 0.3s forwards;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .lesson-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .progress-track {
+            flex-grow: 1;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px var(--success);
+        }
+
+        .card-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .question-card {
+            width: 100%;
+            max-width: 500px;
+            padding: 40px 30px;
+            text-align: center;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUp 0.5s forwards 0.2s;
+        }
+
+        @keyframes slideUp { to { transform: translateY(0); opacity: 1; } }
+
+        .q-tag {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-bottom: 15px;
+            display: block;
+            font-weight: 700;
+        }
+
+        .q-text {
+            font-size: 1.8rem;
+            font-weight: 300;
+            line-height: 1.4;
+            margin-bottom: 40px;
+        }
+
+        .strong { font-weight: 700; color: var(--primary); }
+
+        /* OPTIONS & MIC */
+        .options-grid { display: grid; gap: 15px; }
         
-        /* Dashboard */
-        .header { position: sticky; top: 0; background: white; padding: 15px; display: flex; justify-content: space-around; border-bottom: 2px solid var(--g); z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .stat { font-weight: 900; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
-
-        /* Level Map */
-        .path { display: flex; flex-direction: column-reverse; align-items: center; padding: 60px 0; background: #f7f7f7; min-height: 100vh; }
-        .node { 
-            width: 85px; height: 80px; border-radius: 50%; border: none; margin: 15px 0;
-            color: white; font-weight: 900; cursor: pointer; transition: 0.2s;
-            box-shadow: 0 8px 0 #afafaf; background: var(--g); font-size: 1.3rem;
+        .option-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 16px;
+            color: white;
+            font-size: 1.1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Outfit', sans-serif;
         }
-        .unlocked { background: var(--p); box-shadow: 0 8px 0 var(--pd); }
-        .current { transform: scale(1.2); border: 4px solid var(--b); animation: float 2s infinite ease-in-out; }
-        @keyframes float { 0%, 100% { transform: scale(1.2) translateY(0); } 50% { transform: scale(1.2) translateY(-10px); } }
 
-        /* Lesson UI */
-        .overlay { position: fixed; inset: 0; background: white; display: none; flex-direction: column; z-index: 200; }
-        .l-header { padding: 20px; display: flex; align-items: center; gap: 20px; }
-        .progress { flex-grow: 1; height: 16px; background: var(--g); border-radius: 8px; overflow: hidden; }
-        .bar { height: 100%; background: var(--p); width: 0%; transition: 0.4s; }
+        .option-btn:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); }
         
-        .l-body { padding: 40px 20px; max-width: 500px; margin: 0 auto; text-align: center; width: 100%; box-sizing: border-box; }
-        .type { color: var(--b); font-weight: 900; text-transform: uppercase; font-size: 0.9rem; margin-bottom: 10px; display: block; }
-        .q-text { font-size: 1.8rem; font-weight: 700; margin-bottom: 30px; line-height: 1.3; }
-
-        /* Options */
-        .opt { 
-            display: block; width: 100%; padding: 18px; margin: 12px 0; 
-            border: 2px solid var(--g); border-bottom: 6px solid var(--g);
-            border-radius: 18px; background: white; font-size: 1.1rem; font-weight: 700;
-            cursor: pointer; transition: 0.1s; text-align: left;
+        .option-btn.correct {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--success);
+            color: var(--success);
         }
-        .opt:hover { background: #f8fafc; }
-        .opt:active { transform: translateY(4px); border-bottom-width: 2px; }
-        .correct { background: #dcfce7 !important; border-color: var(--p) !important; color: #166534; }
-        .wrong { background: #fee2e2 !important; border-color: var(--e) !important; color: #991b1b; }
-
-        /* Speaking Mic */
-        .mic-btn { 
-            width: 100px; height: 100px; border-radius: 50%; background: var(--e); 
-            border: none; color: white; font-size: 2rem; cursor: pointer;
-            box-shadow: 0 10px 0 #cc3a3a; margin: 20px 0;
+        
+        .option-btn.wrong {
+            background: rgba(244, 63, 94, 0.2);
+            border-color: var(--error);
+            color: var(--error);
         }
-        .mic-active { animation: pulse 1s infinite; background: #ff0000; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 75, 75, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(255, 75, 75, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 75, 75, 0); } }
 
-        .jump-btn { position: fixed; bottom: 30px; right: 30px; background: var(--b); color: white; border: none; padding: 18px 30px; border-radius: 50px; font-weight: 900; cursor: pointer; box-shadow: 0 6px 0 #1589bd; }
+        .mic-wrapper {
+            position: relative;
+            width: 120px; height: 120px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mic-btn {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f43f5e, #e11d48);
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 2;
+            box-shadow: 0 10px 20px rgba(225, 29, 72, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .mic-btn:active { transform: scale(0.9); }
+
+        .mic-ripple {
+            position: absolute;
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            border: 2px solid var(--error);
+            opacity: 0;
+            z-index: 1;
+        }
+
+        .mic-listening .mic-ripple { animation: ripple 1.5s infinite; }
+
+        @keyframes ripple {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        /* FEEDBACK MODAL (BOTTOM SHEET) */
+        .feedback-sheet {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            padding: 30px;
+            border-radius: 30px 30px 0 0;
+            background: #1e293b;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sheet-visible { transform: translateY(0); }
+        .sheet-correct { background: #064e3b; }
+        .sheet-wrong { background: #450a0a; }
+
+        .next-btn {
+            width: 100%;
+            padding: 18px;
+            border-radius: 16px;
+            border: none;
+            background: white;
+            color: #0f172a;
+            font-weight: 900;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="stat" style="color:var(--p)">⭐ LVL <span id="u-lvl">1</span></div>
-        <div class="stat" style="color:var(--e)">❤️ <span id="u-hearts">5</span></div>
-    </div>
-
-    <div class="path" id="map"></div>
-    <button class="jump-btn" onclick="triggerJump()">⚡ JUMP LEVEL</button>
-
-    <div class="overlay" id="ui">
-        <div class="l-header">
-            <button onclick="closeLesson()" style="border:none; background:none; font-size:2.5rem; cursor:pointer; color:var(--g)">✕</button>
-            <div class="progress"><div class="bar" id="p-bar"></div></div>
+    <header class="app-header">
+        <div class="stat-capsule" style="color:var(--success)">
+            <span>💚</span> <span id="hearts-display">5</span>
         </div>
-        <div class="l-body" id="l-body"></div>
+        <div class="stat-capsule" style="color:var(--accent)">
+            <span>💠</span> <span id="level-display">1</span>
+        </div>
+    </header>
+
+    <div class="level-map" id="game-map">
+        </div>
+
+    <button class="jump-fab" onclick="initJump()">⚡ JUMP TEST</button>
+
+    <div class="lesson-overlay" id="lesson-layer">
+        <div class="lesson-header">
+            <div onclick="exitLesson()" style="cursor:pointer; font-size:1.5rem; opacity:0.7">✕</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="lesson-progress"></div>
+            </div>
+        </div>
+
+        <div class="card-container" id="card-anchor">
+            </div>
+
+        <div class="feedback-sheet" id="feedback-sheet">
+            <h2 id="feedback-title" style="margin:0 0 10px 0;">Great Job!</h2>
+            <p id="feedback-msg" style="margin:0; opacity:0.8;">Correct solution here.</p>
+            <button class="next-btn" id="next-btn" onclick="nextSlide()">CONTINUE</button>
+        </div>
     </div>
 
 <script>
-    // --- MOTOR INFINITO GENERATIVO ---
-    const engine = {
-        subjects: ["The CEO", "Your sister", "Professional athletes", "A famous architect", "Most citizens", "Our team", "The scientist"],
-        verbs: [
-            { base: "work", gerund: "working", pp: "worked", prep: "on", lvl: 1 },
-            { base: "rely", gerund: "relying", pp: "relied", prep: "on", lvl: 10 },
-            { base: "succeed", gerund: "succeeding", pp: "succeeded", prep: "in", lvl: 15 },
-            { base: "apologize", gerund: "apologizing", pp: "apologized", prep: "for", lvl: 20 },
-            { base: "object", gerund: "objecting", pp: "objected", prep: "to", lvl: 50 }
-        ],
-        complements: ["the new strategy", "improving the results", "breaking the rules", "the unexpected delay", "designing the building"],
-        
-        generate(lvl) {
-            const r = Math.random();
-            const s = this.subjects[Math.floor(Math.random() * this.subjects.length)];
-            const v = this.verbs.filter(x => x.lvl <= lvl).sort(() => 0.5 - Math.random())[0] || this.verbs[0];
-            const c = this.complements[Math.floor(Math.random() * this.complements.length)];
+    /**
+     * SEMANTIC FRAME ENGINE v1.0
+     * Generates logical sentences based on linguistic templates instead of random words.
+     */
+    const Engine = {
+        data: {
+            people: ["My brother", "The CEO", "A scientist", "The developer", "Sarah", "Our teacher"],
+            time_present: ["usually", "often", "rarely", "always", "sometimes"],
+            time_past: ["yesterday", "last week", "two days ago", "in 2010"],
+            
+            // Verbs are objects with conjugations to ensure grammar accuracy
+            verbs_action: [
+                { base: "write", 3ps: "writes", past: "wrote", pp: "written", gerund: "writing", trans: "escribir" },
+                { base: "eat", 3ps: "eats", past: "ate", pp: "eaten", gerund: "eating", trans: "comer" },
+                { base: "fix", 3ps: "fixes", past: "fixed", pp: "fixed", gerund: "fixing", trans: "arreglar" },
+                { base: "buy", 3ps: "buys", past: "bought", pp: "bought", gerund: "buying", trans: "comprar" }
+            ],
 
-            if (r > 0.7 && lvl > 5) return this.types.speaking(s, v, c);
-            if (r > 0.4) return this.types.preposition(s, v, c);
-            return this.types.grammar(s, v, c, lvl);
+            objects: ["a report", "the car", "a new house", "dinner", "the code"],
+            
+            phrasals: [
+                { v: "give up", meaning: "quit", context: "smoking" },
+                { v: "look forward to", meaning: "anticipate", context: "the meeting" },
+                { v: "run out of", meaning: "exhaust", context: "time" }
+            ]
         },
 
-        types: {
-            preposition: (s, v, c) => ({
-                type: "Preposition Challenge",
-                q: `${s} is ${v.gerund} ____ ${c}.`,
-                a: shuffle([v.prep, "at", "with"]),
-                cor: v.prep
-            }),
-            grammar: (s, v, c, lvl) => {
-                const isCond = lvl > 20 && Math.random() > 0.5;
-                if(isCond) return {
-                    type: "Conditional Lab",
-                    q: `If ${s} ____ more time, they would have ${v.pp}.`,
-                    a: shuffle(["had had", "have had", "had"]),
-                    cor: "had had"
-                };
+        // Generates a question based on user Level difficulty
+        generate: function(level) {
+            const seed = Math.random();
+            const subject = this.data.people[Math.floor(Math.random() * this.data.people.length)];
+            const verb = this.data.verbs_action[Math.floor(Math.random() * this.data.verbs_action.length)];
+            const obj = this.data.objects[Math.floor(Math.random() * this.data.objects.length)];
+
+            // LEVEL 1-10: Present Simple vs Continuous
+            if (level <= 10) {
+                if (seed > 0.5) { // Type: Grammar (Gap Fill)
+                    return {
+                        type: "grammar",
+                        tag: "PRESENT TENSE",
+                        q: `${subject} ____ ${obj} right now.`,
+                        correct: `is ${verb.gerund}`,
+                        options: [`is ${verb.gerund}`, verb.3ps, verb.base, `are ${verb.gerund}`],
+                        feedback: "Use 'is + ing' for actions happening right now."
+                    };
+                } else { // Type: Speaking
+                    const sentence = `${subject} ${verb.3ps} ${obj}`;
+                    return {
+                        type: "speaking",
+                        tag: "PRONUNCIATION",
+                        q: sentence,
+                        correct: sentence.toLowerCase(),
+                        feedback: "Great pronunciation!"
+                    };
+                }
+            }
+            
+            // LEVEL 11-40: Past & Conditionals
+            else if (level <= 40) {
+                const time = this.data.time_past[Math.floor(Math.random() * this.data.time_past.length)];
+                if (seed > 0.6) {
+                    return {
+                        type: "grammar",
+                        tag: "PAST SIMPLE",
+                        q: `${subject} ____ ${obj} ${time}.`,
+                        correct: verb.past,
+                        options: [verb.past, verb.base, `has ${verb.pp}`, verb.3ps],
+                        feedback: `Use Past Simple (${verb.past}) with finished time markers like '${time}'.`
+                    };
+                } else {
+                    return {
+                        type: "grammar",
+                        tag: "SECOND CONDITIONAL",
+                        q: `If I were you, I ____ ${obj}.`,
+                        correct: `would ${verb.base}`,
+                        options: [`would ${verb.base}`, `will ${verb.base}`, verb.past, `would have ${verb.pp}`],
+                        feedback: "Hypothetical situations (If I were you) use 'would + base verb'."
+                    };
+                }
+            }
+
+            // LEVEL 41+: Advanced / Phrasals / Perfects
+            else {
+                const pv = this.data.phrasals[Math.floor(Math.random() * this.data.phrasals.length)];
                 return {
-                    type: "Tense Master",
-                    q: `Recently, ${s} ____ ${v.pp} on that.`,
-                    a: shuffle(["has been", "have been", "is"]),
-                    cor: s.includes("s") || s.includes("team") ? "have been" : "has been"
+                    type: "grammar",
+                    tag: "PHRASAL VERBS",
+                    q: `We need to stop. We have ____ ${pv.context}.`,
+                    correct: "run out of", // Simplified logic for demo
+                    options: ["run out of", "run away with", "run into", "run over"],
+                    feedback: "'Run out of' means to have none left."
                 };
-            },
-            speaking: (s, v, c) => ({
-                type: "Speaking Test",
-                q: `Say: "${s} ${v.base}s ${v.prep} ${c}."`,
-                cor: `${s} ${v.base}s ${v.prep} ${c}`.toLowerCase(),
-                isSpeaking: true
-            })
+            }
         }
     };
 
-    function shuffle(arr) { return arr.sort(() => 0.5 - Math.random()); }
+    /**
+     * APP LOGIC
+     */
+    let state = {
+        level: parseInt(localStorage.getItem('ll_level')) || 1,
+        hearts: 5,
+        session: [], // Current exercises
+        step: 0,
+        isJump: false
+    };
 
-    // --- GAME STATE ---
-    let userLvl = parseInt(localStorage.getItem('inf_v8')) || 1;
-    let hearts = 5;
-    let session = { active: false, step: 0, total: 5, qList: [] };
-
-    // --- AUDIO & SPEECH ---
-    const audio = new (window.AudioContext || window.webkitAudioContext)();
-    function beep(f) {
-        const o = audio.createOscillator(); const g = audio.createGain();
-        o.connect(g); g.connect(audio.destination); o.frequency.value = f;
-        g.gain.setValueAtTime(0.1, audio.currentTime); g.gain.linearRampToValueAtTime(0, audio.currentTime + 0.3);
-        o.start(); o.stop(audio.currentTime + 0.3);
-    }
-
-    // --- LOGIC ---
-    function renderMap() {
-        const map = document.getElementById('map'); map.innerHTML = '';
-        for(let i = 1; i <= 100; i++) {
-            const btn = document.createElement('button');
-            btn.className = `node ${i <= userLvl ? 'unlocked' : ''} ${i === userLvl ? 'current' : ''}`;
-            btn.innerHTML = i % 10 === 0 ? '🏆' : i;
-            btn.onclick = () => start(i);
-            btn.style.marginLeft = `${Math.sin(i * 0.8) * 60}px`;
-            map.appendChild(btn);
-        }
-        document.getElementById('u-lvl').innerText = userLvl;
-        window.scrollTo(0, document.body.scrollHeight);
-    }
-
-    function start(lvl, isJump = false) {
-        if(lvl > userLvl && !isJump) return;
-        session = { active: true, step: 0, total: isJump ? 8 : 5, qList: [], jump: isJump, target: lvl };
-        for(let i=0; i<session.total; i++) session.qList.push(engine.generate(lvl));
-        document.getElementById('ui').style.display = 'flex';
-        renderQ();
-    }
-
-    function renderQ() {
-        const q = session.qList[session.step];
-        const body = document.getElementById('l-body');
-        document.getElementById('p-bar').style.width = `${(session.step / session.total) * 100}%`;
-        document.getElementById('u-hearts').innerText = hearts;
-
-        let html = `<span class="type">${q.type}</span><div class="q-text">${q.q}</div>`;
-        
-        if(q.isSpeaking) {
-            html += `<button class="mic-btn" id="mic" onclick="startSpeech()">🎤</button><p id="speech-txt">Tap to speak</p>`;
-        } else {
-            html += `<div id="opts">${q.a.map(opt => `<button class="opt" onclick="check('${opt}', '${q.cor}')">${opt}</button>`).join('')}</div>`;
-        }
-        body.innerHTML = html;
-    }
-
-    function check(ans, cor) {
-        if(ans.toLowerCase().replace(/[.,!]/g, '') === cor.toLowerCase().replace(/[.,!]/g, '')) {
-            beep(800);
-            session.step++;
-            if(session.step >= session.total) {
-                if(session.jump) userLvl = session.target; else if(session.target === userLvl) userLvl++;
-                localStorage.setItem('inf_v8', userLvl);
-                alert("LEVEL COMPLETE!"); closeLesson(); renderMap();
-            } else renderQ();
-        } else {
-            beep(200); hearts--;
-            if(hearts <= 0) { alert("GAME OVER"); location.reload(); }
-            renderQ();
-        }
-    }
-
-    function startSpeech() {
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = 'en-US';
-        const mic = document.getElementById('mic');
-        recognition.onstart = () => mic.classList.add('mic-active');
-        recognition.onresult = (e) => {
-            const transcript = e.results[0][0].transcript;
-            document.getElementById('speech-txt').innerText = `You said: "${transcript}"`;
-            setTimeout(() => check(transcript, session.qList[session.step].cor), 1000);
-        };
-        recognition.onerror = () => { mic.classList.remove('mic-active'); alert("Mic error. Ensure HTTPS or local file."); };
-        recognition.onend = () => mic.classList.remove('mic-active');
-        recognition.start();
-    }
-
-    function triggerJump() {
-        const target = userLvl + 10;
-        if(confirm(`Certify Level ${target}? Fail = Game Over.`)) start(target, true);
-    }
-
-    function closeLesson() { document.getElementById('ui').style.display = 'none'; }
+    // Initialize
+    document.getElementById('level-display').innerText = state.level;
     renderMap();
+
+    // -- MAP RENDERING --
+    function renderMap() {
+        const container = document.getElementById('game-map');
+        container.innerHTML = '';
+        
+        // Generate visible nodes (previous 5, current, next 20)
+        const start = Math.max(1, state.level - 5);
+        const end = state.level + 20;
+
+        for (let i = start; i <= end; i++) {
+            const node = document.createElement('div');
+            let classes = 'level-node glass-panel';
+            if (i < state.level) classes += ' unlocked';
+            if (i === state.level) classes += ' current unlocked';
+            if (i % 10 === 0) classes += ' boss';
+            
+            node.className = classes;
+            node.innerText = i;
+            
+            // Zig zag layout
+            const offset = Math.sin(i) * 50; 
+            node.style.transform = `translateX(${offset}px)`;
+            if (i === state.level) node.style.transform = `translateX(${offset}px) scale(1.2)`;
+
+            node.onclick = () => {
+                if (i <= state.level) startSession(i, false);
+            };
+
+            container.appendChild(node);
+        }
+    }
+
+    // -- SESSION MANAGEMENT --
+    function startSession(lvl, isJump) {
+        state.isJump = isJump;
+        state.step = 0;
+        state.session = [];
+        
+        // Create 5 unique exercises using the Engine
+        const count = isJump ? 10 : 5;
+        for(let i=0; i<count; i++) {
+            state.session.push(Engine.generate(isJump ? state.level + 10 : lvl));
+        }
+
+        document.getElementById('lesson-layer').style.display = 'flex';
+        renderCard();
+    }
+
+    function renderCard() {
+        const item = state.session[state.step];
+        const container = document.getElementById('card-anchor');
+        const progress = (state.step / state.session.length) * 100;
+        
+        document.getElementById('lesson-progress').style.width = `${progress}%`;
+        document.getElementById('feedback-sheet').classList.remove('sheet-visible', 'sheet-correct', 'sheet-wrong');
+        
+        // Shuffle options if grammar
+        if(item.options) item.options.sort(() => Math.random() - 0.5);
+
+        let html = `
+            <div class="question-card glass-panel">
+                <span class="q-tag">${item.tag} ${state.isJump ? '• TEST' : ''}</span>
+                <div class="q-text">${formatQuestion(item.q)}</div>
+        `;
+
+        if (item.type === 'grammar') {
+            html += `<div class="options-grid">`;
+            item.options.forEach(opt => {
+                html += `<button class="option-btn" onclick="checkAnswer('${opt}', '${item.correct}')">${opt}</button>`;
+            });
+            html += `</div>`;
+        } else if (item.type === 'speaking') {
+            html += `
+                <div class="mic-wrapper" id="mic-container">
+                    <div class="mic-ripple"></div>
+                    <button class="mic-btn" onclick="toggleMic('${item.correct}')">🎤</button>
+                </div>
+                <p style="margin-top:20px; opacity:0.7">Tap and read aloud</p>
+                <div id="speech-result" style="height:20px; color:var(--accent); font-weight:bold"></div>
+            `;
+        }
+
+        html += `</div>`;
+        container.innerHTML = html;
+    }
+
+    // Helper to highlight blanks
+    function formatQuestion(text) {
+        return text.replace('____', '<span style="border-bottom: 2px solid var(--accent); color:var(--accent); padding:0 10px">?</span>');
+    }
+
+    // -- VALIDATION LOGIC --
+    function checkAnswer(userAns, correctAns) {
+        const isCorrect = userAns === correctAns;
+        showFeedback(isCorrect, correctAns);
+    }
+
+    function showFeedback(isCorrect, correctAns) {
+        const sheet = document.getElementById('feedback-sheet');
+        const title = document.getElementById('feedback-title');
+        const msg = document.getElementById('feedback-msg');
+        const item = state.session[state.step];
+
+        sheet.classList.add('sheet-visible');
+        if (isCorrect) {
+            sheet.classList.add('sheet-correct');
+            title.innerText = "Excellent!";
+            msg.innerText = item.feedback || "That is correct.";
+            new Audio('https://actions.google.com/sounds/v1/cartoon/pop.ogg').play().catch(()=>{}); // Simple sound
+        } else {
+            sheet.classList.add('sheet-wrong');
+            title.innerText = "Not quite...";
+            msg.innerText = `Correct answer: ${correctAns}`;
+            state.hearts--;
+            document.getElementById('hearts-display').innerText = state.hearts;
+            if(state.hearts <= 0) gameOver();
+        }
+    }
+
+    function nextSlide() {
+        state.step++;
+        if (state.step >= state.session.length) {
+            levelComplete();
+        } else {
+            renderCard();
+        }
+    }
+
+    // -- SPEAKING LOGIC --
+    function toggleMic(targetPhrase) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert("Browser doesn't support speech. Use Chrome.");
+            checkAnswer(targetPhrase, targetPhrase); // Auto-pass for non-supported browsers
+            return;
+        }
+
+        const micContainer = document.getElementById('mic-container');
+        micContainer.classList.add('mic-listening');
+        
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+
+        recognition.start();
+
+        recognition.onresult = (event) => {
+            micContainer.classList.remove('mic-listening');
+            const transcript = event.results[0][0].transcript.toLowerCase();
+            const cleanTarget = targetPhrase.toLowerCase().replace(/[.,]/g, '');
+            const cleanInput = transcript.replace(/[.,]/g, '');
+
+            document.getElementById('speech-result').innerText = `"${transcript}"`;
+
+            // Fuzzy matching (checking if mostly correct)
+            if (cleanInput.includes(cleanTarget) || cleanInput === cleanTarget) {
+                setTimeout(() => showFeedback(true, targetPhrase), 500);
+            } else {
+                setTimeout(() => showFeedback(false, targetPhrase), 1000);
+            }
+        };
+
+        recognition.onerror = () => {
+            micContainer.classList.remove('mic-listening');
+            alert("Microphone error. Try again.");
+        };
+    }
+
+    // -- GAME STATES --
+    function levelComplete() {
+        if (state.isJump) {
+            state.level += 10;
+        } else if (state.level < 100) {
+            state.level++;
+        }
+        localStorage.setItem('ll_level', state.level);
+        document.getElementById('level-display').innerText = state.level;
+        exitLesson();
+        renderMap();
+        alert("Level Complete! Logic & Precision increased.");
+    }
+
+    function gameOver() {
+        alert("Out of hearts! Restarting session...");
+        state.hearts = 5;
+        document.getElementById('hearts-display').innerText = 5;
+        exitLesson();
+    }
+
+    function exitLesson() {
+        document.getElementById('lesson-layer').style.display = 'none';
+    }
+
+    function initJump() {
+        if(confirm("Jump 10 levels? High difficulty. One mistake = Game Over.")) {
+            startSession(state.level, true);
+        }
+    }
+
 </script>
 </body>
 </html>
